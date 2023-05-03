@@ -1,0 +1,10 @@
+.quote {
+  margin-right: 10rem;
+}
+
+@media (max-width: 768px) {
+  .quote {
+    order: 2;
+    margin-right: 2rem;
+  }
+}

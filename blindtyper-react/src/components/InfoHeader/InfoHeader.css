@@ -1,0 +1,19 @@
+.infoHeader {
+  border: 2px solid rgb(41, 41, 41);
+  border-radius: 10px;
+  padding: 3rem;
+  margin: auto 0;
+}
+
+.infoHeader p {
+  margin: 10px;
+}
+
+@media (max-width: 768px) {
+  .infoHeader {
+    order: 1;
+    display: flex;
+    justify-content: space-around;
+    align-items: start;
+  }
+}
