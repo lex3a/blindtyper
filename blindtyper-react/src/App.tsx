@@ -17,24 +17,14 @@ function App() {
       setLoading(false);
     }
     getData("https://baconipsum.com/api/?type=meat-and-filler&paras=2");
-    window.addEventListener("keypress", log);
-
-    return () => window.removeEventListener("keypress", log);
   }, []);
-
-  const log = (e: KeyboardEvent): void => {
-    setText(e.key);
-    setTypedChars((prev) => prev + 1);
-
-    console.log(e.key);
-  };
 
   return (
     <>
       {isLoading ? (
         <p>Loading...</p>
       ) : (
-        <div className="flex" onKeyDown={log}>
+        <div className="flex">
           <p>{text}</p>
           <Quote text={quote}></Quote>
           <InfoHeader cpm={typedChars} />
