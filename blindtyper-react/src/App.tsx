@@ -1,4 +1,4 @@
-import { useState, useEffect, KeyboardEvent } from "react";
+import { useState, useEffect, useRef } from "react";
 import { InfoHeader } from "./components/InfoHeader";
 import { Quote } from "./components/Quote";
 import "./App.css";
@@ -19,6 +19,16 @@ function App() {
     getData("https://baconipsum.com/api/?type=meat-and-filler&paras=2");
   }, []);
 
+  const handleBlur = (event: React.FocusEvent<HTMLInputElement, Element>) => {
+    event.target.focus();
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Tab") {
+      event.preventDefault();
+    }
+  };
+
   return (
     <>
       {isLoading ? (
@@ -26,6 +36,15 @@ function App() {
       ) : (
         <div className="flex">
           <p>{text}</p>
+          <input
+            type="text"
+            name="hiddenType"
+            id="hiddenType"
+            autoFocus
+            autoComplete="off"
+            onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
+          />
           <Quote text={quote}></Quote>
           <InfoHeader cpm={typedChars} />
         </div>

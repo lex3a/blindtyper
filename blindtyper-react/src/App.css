@@ -5,6 +5,16 @@
   text-align: center;
 }
 
+#hiddenType {
+  color: transparent;
+  background-color: transparent;
+  overflow: hidden;
+  border: none;
+  caret-color: transparent;
+  outline: 0;
+  height: 1px;
+}
+
 .flex {
   display: flex;
   justify-content: space-between;
