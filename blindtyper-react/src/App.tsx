@@ -92,7 +92,7 @@ function App() {
   };
 
   const isFinished = () => {
-    const finished = outgoingChars.length === quote[0].length;
+    const finished = outgoingChars.length === quote.length;
     if (finished) {
       clearInterval(intervalId.current);
     }
@@ -116,16 +116,16 @@ function App() {
     return Math.round(charCount / durationInMinutes);
   };
 
-  const calculateAccuracy = (outgoingChars: string, originalText: string[]) => {
+  const calculateAccuracy = (outgoingChars: string, originalText: string) => {
     let correctChars = 0;
-    for (let i = 0; i < quote[0].length; i++) {
+    for (let i = 0; i < originalText.length; i++) {
       if (outgoingChars[i] && outgoingChars[i] === originalText[0][i]) {
         correctChars++;
       }
     }
-    const accuracy = Math.round((correctChars / quote[0].length) * 100);
+    const accuracy = Math.round((correctChars / quote.length) * 100);
 
-    console.log(`${accuracy}% ${(correctChars / quote[0].length) * 100}`);
+    console.log(`${accuracy}% ${(correctChars / quote.length) * 100}`);
 
     return accuracy;
   };
