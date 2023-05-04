@@ -2,6 +2,14 @@
   margin-right: 10rem;
 }
 
+.red {
+  background-color: red;
+}
+
+.green {
+  background-color: green;
+}
+
 @media (max-width: 768px) {
   .quote {
     order: 2;
