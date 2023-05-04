@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { InfoHeader } from "./components/InfoHeader";
 import { Quote } from "./components/Quote";
 import "./App.css";
-import { currentTime } from "./utils/time";
+import { currentTime, getDurationInMinutes } from "./utils/time";
 
 function App() {
   const [quote, setQuote] = useState<Array<string>>([]);
@@ -49,12 +49,12 @@ function App() {
       updatedOutgoingChars += currentChar;
       setOutgoingChars(updatedOutgoingChars);
       setCorrectChar(true);
-      const durationInMinutes = (currentTime() - startTime) / 60000.0;
+      const durationInMinutes = getDurationInMinutes(startTime);
       const newCpm = calculateCpm(updatedOutgoingChars.length, durationInMinutes);
       setCpm(newCpm);
 
       if (text.charAt(0) === " ") {
-        const durationInMinutes = (currentTime() - startTime) / 60000.0;
+        const durationInMinutes = getDurationInMinutes(startTime);
         const newWordCount = wordCount + 1;
         const newWpm = calculateWpm(newWordCount, durationInMinutes);
         setWpm(newWpm);
