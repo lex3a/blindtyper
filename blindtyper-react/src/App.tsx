@@ -12,11 +12,11 @@ function App() {
   const [isLoading, setLoading] = useState(true);
   const [text, setText] = useState("");
   const [wordCount, setWordCount] = useState(0);
-  // const [typedChars, setTypedChars] = useState("");
   const [currentChar, setCurrentChar] = useState("");
   const [startTime, setStartTime] = useState(0);
   const [outgoingChars, setOutgoingChars] = useState("");
   const [isCorrectChar, setCorrectChar] = useState(true);
+  const [errorChars, setErrorChars] = useState(0);
   const intervalId = useRef<number>();
 
   useEffect(() => {
@@ -79,8 +79,12 @@ function App() {
         }
       } else {
         setCorrectChar(false);
-        const newAccuracy = calculateAccuracy(updatedOutgoingChars, quote);
+
+        const newError = errorChars + 1;
+
+        const newAccuracy = calculateAccuracy(newError, quote);
         setAccuracy(newAccuracy);
+        setErrorChars(newError);
       }
     }
   };
@@ -116,18 +120,8 @@ function App() {
     return Math.round(charCount / durationInMinutes);
   };
 
-  const calculateAccuracy = (outgoingChars: string, originalText: string) => {
-    let correctChars = 0;
-    for (let i = 0; i < originalText.length; i++) {
-      if (outgoingChars[i] && outgoingChars[i] === originalText[0][i]) {
-        correctChars++;
-      }
-    }
-    const accuracy = Math.round((correctChars / quote.length) * 100);
-
-    console.log(`${accuracy}% ${(correctChars / quote.length) * 100}`);
-
-    return accuracy;
+  const calculateAccuracy = (errorChars: number, originalText: string) => {
+    return Math.max((1000 - Math.round((1000 * errorChars) / originalText.length)) / 10, 0);
   };
 
   return (
