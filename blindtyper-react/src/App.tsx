@@ -5,7 +5,10 @@ import "./App.css";
 import { currentTime } from "./utils/time";
 
 function App() {
-  const [quote, setQuote] = useState<Array<string>>([]);
+  // const [quote, setQuote] = useState<Array<string>>([]);
+  // const [wpm, setWpm] = useState(0);
+  // const [cpm, setCpm] = useState(0);
+  // const [accuracy, setAccuracy] = useState(0);
   const [isLoading, setLoading] = useState(true);
   const [text, setText] = useState("");
   const [typedChars, setTypedChars] = useState(0);
@@ -13,15 +16,12 @@ function App() {
   const [startTime, setStartTime] = useState(0);
   const [outgoingChars, setOutgoingChars] = useState("");
   const [isCorrectChar, setCorrectChar] = useState(true);
-  const [wpm, setWpm] = useState(0);
-  const [cpm, setCpm] = useState(0);
-  const [accuracy, setAccuracy] = useState(0);
 
   useEffect(() => {
     async function getData(url: string) {
       const response = await fetch(url);
       const data = await response.json();
-      setQuote(data);
+      //setQuote(data);
       initQuoteStates(data);
       setLoading(false);
     }
