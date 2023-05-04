@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { InfoHeader } from "./components/InfoHeader";
 import { Quote } from "./components/Quote";
 import "./App.css";
 import { currentTime, getDurationInMinutes } from "./utils/time";
 
 function App() {
-  const [quote, setQuote] = useState<Array<string>>([]);
+  const [quote, setQuote] = useState("");
   const [wpm, setWpm] = useState(0);
   const [cpm, setCpm] = useState(0);
   const [accuracy, setAccuracy] = useState(100);
@@ -17,17 +17,34 @@ function App() {
   const [startTime, setStartTime] = useState(0);
   const [outgoingChars, setOutgoingChars] = useState("");
   const [isCorrectChar, setCorrectChar] = useState(true);
+  const intervalId = useRef<number>();
 
   useEffect(() => {
     async function getData(url: string) {
       const response = await fetch(url);
-      const data = await response.json();
-      setQuote(data);
+      const [data] = await response.json();
+
       initQuoteStates(data);
       setLoading(false);
     }
-    getData("https://baconipsum.com/api/?type=meat-and-filler&paras=2");
+    getData("https://baconipsum.com/api/?type=meat-and-filler&paras=1");
   }, []);
+
+  useEffect(() => {
+    intervalId.current = setInterval(() => {
+      if (startTime) {
+        const durationInMinutes = getDurationInMinutes(startTime);
+        const newCpm = calculateCpm(outgoingChars.length, durationInMinutes);
+        const newWpm = calculateWpm(wordCount, durationInMinutes);
+        setCpm(newCpm);
+        setWpm(newWpm);
+      }
+    }, 200);
+
+    return () => {
+      clearInterval(intervalId.current);
+    };
+  });
 
   const handleBlur = (event: React.FocusEvent<HTMLInputElement, Element>) => {
     event.target.focus();
@@ -42,31 +59,29 @@ function App() {
 
     initStartTime();
 
-    if (event.key === currentChar) {
-      console.log("Got a symbol match!", currentChar, event.key);
-      setCurrentChar(text.charAt(0));
-      setText(text.substring(1));
-      updatedOutgoingChars += currentChar;
-      setOutgoingChars(updatedOutgoingChars);
-      setCorrectChar(true);
-      const durationInMinutes = getDurationInMinutes(startTime);
-      const newCpm = calculateCpm(updatedOutgoingChars.length, durationInMinutes);
-      setCpm(newCpm);
-
-      if (text.charAt(0) === " ") {
+    if (event.key.length === 1) {
+      if (event.key === currentChar) {
+        setCurrentChar(text.charAt(0));
+        setText(text.substring(1));
+        updatedOutgoingChars += currentChar;
+        setOutgoingChars(updatedOutgoingChars);
+        setCorrectChar(true);
         const durationInMinutes = getDurationInMinutes(startTime);
-        const newWordCount = wordCount + 1;
-        const newWpm = calculateWpm(newWordCount, durationInMinutes);
-        setWpm(newWpm);
-        console.log(newWpm);
-        setWordCount(newWordCount);
-      }
-    } else if (event.key.length === 1) {
-      console.log("Char mismatch");
-      setCorrectChar(false);
+        const newCpm = calculateCpm(updatedOutgoingChars.length, durationInMinutes);
+        setCpm(newCpm);
 
-      const newAccuracy = calculateAccuracy(updatedOutgoingChars, quote);
-      setAccuracy(newAccuracy);
+        if (text.charAt(0) === " ") {
+          const durationInMinutes = getDurationInMinutes(startTime);
+          const newWordCount = wordCount + 1;
+          const newWpm = calculateWpm(newWordCount, durationInMinutes);
+          setWpm(newWpm);
+          setWordCount(newWordCount);
+        }
+      } else {
+        setCorrectChar(false);
+        const newAccuracy = calculateAccuracy(updatedOutgoingChars, quote);
+        setAccuracy(newAccuracy);
+      }
     }
   };
 
@@ -76,9 +91,21 @@ function App() {
     }
   };
 
-  const initQuoteStates = (quote: string[]) => {
-    setCurrentChar(quote[0].charAt(0));
-    setText(quote[0].substring(1));
+  const isFinished = () => {
+    const finished = outgoingChars.length === quote[0].length;
+    if (finished) {
+      clearInterval(intervalId.current);
+    }
+    return finished;
+  };
+
+  const initQuoteStates = (quote: string) => {
+    // We need this because API is strange and places two spaces
+    // after the end of the sentence.
+    const newQuote = quote.replace(/\s{2}/g, " ");
+    setQuote(newQuote);
+    setCurrentChar(newQuote.charAt(0));
+    setText(newQuote.substring(1));
   };
 
   const calculateWpm = (wordCount: number, durationInMinutes: number) => {
@@ -96,7 +123,9 @@ function App() {
         correctChars++;
       }
     }
-    const accuracy = Math.round(100 - (correctChars / quote[0].length) * 100);
+    const accuracy = Math.round((correctChars / quote[0].length) * 100);
+
+    console.log(`${accuracy}% ${(correctChars / quote[0].length) * 100}`);
 
     return accuracy;
   };
@@ -116,8 +145,17 @@ function App() {
             onKeyDown={handleKeyDown}
             onBlur={handleBlur}
           />
-          <Quote text={text} char={currentChar} outgoingChars={outgoingChars} isCorrectChar={isCorrectChar}></Quote>
-          <InfoHeader cpm={cpm} wpm={wpm} accuracy={accuracy} />
+          {isFinished() ? (
+            <div>
+              <p>You nailed it! Literally :D</p>
+              <InfoHeader cpm={cpm} wpm={wpm} accuracy={accuracy} />
+            </div>
+          ) : (
+            <>
+              <Quote text={text} char={currentChar} outgoingChars={outgoingChars} isCorrectChar={isCorrectChar}></Quote>
+              <InfoHeader cpm={cpm} wpm={wpm} accuracy={accuracy} />
+            </>
+          )}
         </div>
       )}
     </>
