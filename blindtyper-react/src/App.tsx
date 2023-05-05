@@ -20,6 +20,7 @@ function App() {
   const [outgoingChars, setOutgoingChars] = useState("");
   const [isCorrectChar, setCorrectChar] = useState(true);
   const [errorChars, setErrorChars] = useState(0);
+  const [fetchError, setFetchError] = useState("");
   const intervalId = useRef<number>();
 
   const initQuoteStates = useCallback((quote: string) => {
@@ -34,10 +35,14 @@ function App() {
   }, []);
 
   const getQuoteData = useCallback(async () => {
-    const response = await fetch(API_URL);
-    const [data] = await response.json();
-    initQuoteStates(data);
-    setLoading(false);
+    try {
+      const response = await fetch(API_URL);
+      const [data] = await response.json();
+      initQuoteStates(data);
+      setLoading(false);
+    } catch (error) {
+      setFetchError(`An error fetching quote. ${error}`);
+    }
   }, [initQuoteStates]);
 
   useEffect(() => {
@@ -183,6 +188,10 @@ function App() {
     },
     [currentChar, handleErrorChar, handleNewChar, handleNewWord, initStartTime, startTime, text]
   );
+
+  if (fetchError) {
+    return <p>{fetchError}</p>;
+  }
 
   if (isLoading) {
     return <p>Loading...</p>;
