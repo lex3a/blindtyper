@@ -109,7 +109,7 @@ function App() {
     target.focus();
   }, []);
 
-  // Hack for FireFox to disable Tab key
+  // Hack for FireFox to disable a Tab key
   useEffect(() => {
     function disableTabKey(this: Window, event: KeyboardEvent) {
       const { key } = event;
@@ -132,20 +132,23 @@ function App() {
       initStartTime();
 
       if (key.length === 1) {
+        // Check only real characters, don't check e.g. "Tab", "Shift", etc.
+        const durationInMinutes = getDurationInMinutes(startTime);
+
         if (key === currentChar) {
-          setCurrentChar(text.charAt(0));
-          setText(text.substring(1));
           updatedOutgoingChars += currentChar;
           setOutgoingChars(updatedOutgoingChars);
+          setCurrentChar(text.charAt(0));
+          setText(text.substring(1));
           setCorrectChar(true);
-          const durationInMinutes = getDurationInMinutes(startTime);
+
           const newCpm = calculateCpm(updatedOutgoingChars.length, durationInMinutes);
           setCpm(newCpm);
 
           if (text.charAt(0) === " ") {
-            const durationInMinutes = getDurationInMinutes(startTime);
             const newWordCount = wordCount + 1;
             const newWpm = calculateWpm(newWordCount, durationInMinutes);
+
             setWpm(newWpm);
             setWordCount(newWordCount);
           }
@@ -154,6 +157,7 @@ function App() {
 
           const newError = errorChars + 1;
           const newAccuracy = calculateAccuracy(newError, quote);
+
           setCorrectChar(false);
           setAccuracy(newAccuracy);
           setErrorChars(newError);
