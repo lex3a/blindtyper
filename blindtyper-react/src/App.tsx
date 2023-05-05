@@ -105,6 +105,7 @@ function App() {
     setErrorChars(0);
   }, [getQuoteData]);
 
+  // Return the focus on our hidden input if we lost it
   const handleBlur = useCallback(({ target }: React.FocusEvent<HTMLInputElement, Element>) => {
     target.focus();
   }, []);
