@@ -1,14 +1,16 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { InfoHeader } from "./components/InfoHeader";
 import { Quote } from "./components/Quote";
-import "./App.css";
 import { currentTime, getDurationInMinutes } from "./utils/time";
+import "./App.css";
+
+const DEFAULT_ACCURACY = 100;
 
 function App() {
   const [quote, setQuote] = useState("");
   const [wpm, setWpm] = useState(0);
   const [cpm, setCpm] = useState(0);
-  const [accuracy, setAccuracy] = useState(100);
+  const [accuracy, setAccuracy] = useState(DEFAULT_ACCURACY);
   const [isLoading, setLoading] = useState(true);
   const [text, setText] = useState("");
   const [wordCount, setWordCount] = useState(0);
@@ -19,6 +21,17 @@ function App() {
   const [errorChars, setErrorChars] = useState(0);
   const intervalId = useRef<number>();
 
+  const initQuoteStates = useCallback((quote: string) => {
+    /*     
+      We need this because API is strange and places two spaces
+      after the end of the sentence. 
+    */
+    const newQuote = quote.replace(/\s{2}/g, " ");
+    setQuote(newQuote);
+    setCurrentChar(newQuote.charAt(0));
+    setText(newQuote.substring(1));
+  }, []);
+
   useEffect(() => {
     async function getData(url: string) {
       const response = await fetch(url);
@@ -28,7 +41,7 @@ function App() {
       setLoading(false);
     }
     getData("https://baconipsum.com/api/?type=meat-and-filler&paras=1");
-  }, []);
+  }, [initQuoteStates]);
 
   useEffect(() => {
     intervalId.current = setInterval(() => {
@@ -46,12 +59,33 @@ function App() {
     };
   });
 
-  const handleBlur = (event: React.FocusEvent<HTMLInputElement, Element>) => {
-    event.target.focus();
+  const calculateWpm = (wordCount: number, durationInMinutes: number) => {
+    return Math.round(wordCount / durationInMinutes);
   };
 
+  // const calculateCpm = (charCount: number, durationInMinutes: number) => {
+  //   return Math.round(charCount / durationInMinutes);
+  // };
+
+  const calculateCpm = useMemo(
+    () => (charCount: number, durationInMinutes: number) => {
+      return Math.round(charCount / durationInMinutes);
+    },
+    []
+  );
+
+  const calculateAccuracy = (errorChars: number, originalText: string) => {
+    return Math.max((1000 - Math.round((1000 * errorChars) / originalText.length)) / 10, 0);
+  };
+
+  const handleBlur = useCallback(({ target }: React.FocusEvent<HTMLInputElement, Element>) => {
+    target.focus();
+  }, []);
+
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Tab") {
+    const { key } = event;
+
+    if (key === "Tab") {
       event.preventDefault();
     }
 
@@ -59,8 +93,8 @@ function App() {
 
     initStartTime();
 
-    if (event.key.length === 1) {
-      if (event.key === currentChar) {
+    if (key.length === 1) {
+      if (key === currentChar) {
         setCurrentChar(text.charAt(0));
         setText(text.substring(1));
         updatedOutgoingChars += currentChar;
@@ -78,11 +112,11 @@ function App() {
           setWordCount(newWordCount);
         }
       } else {
-        setCorrectChar(false);
+        if (!isCorrectChar) return; // exit if last try was already incorrect
 
         const newError = errorChars + 1;
-
         const newAccuracy = calculateAccuracy(newError, quote);
+        setCorrectChar(false);
         setAccuracy(newAccuracy);
         setErrorChars(newError);
       }
@@ -97,31 +131,12 @@ function App() {
 
   const isFinished = () => {
     const finished = outgoingChars.length === quote.length;
+
     if (finished) {
       clearInterval(intervalId.current);
     }
+
     return finished;
-  };
-
-  const initQuoteStates = (quote: string) => {
-    // We need this because API is strange and places two spaces
-    // after the end of the sentence.
-    const newQuote = quote.replace(/\s{2}/g, " ");
-    setQuote(newQuote);
-    setCurrentChar(newQuote.charAt(0));
-    setText(newQuote.substring(1));
-  };
-
-  const calculateWpm = (wordCount: number, durationInMinutes: number) => {
-    return Math.round(wordCount / durationInMinutes);
-  };
-
-  const calculateCpm = (charCount: number, durationInMinutes: number) => {
-    return Math.round(charCount / durationInMinutes);
-  };
-
-  const calculateAccuracy = (errorChars: number, originalText: string) => {
-    return Math.max((1000 - Math.round((1000 * errorChars) / originalText.length)) / 10, 0);
   };
 
   return (
