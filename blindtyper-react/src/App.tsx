@@ -125,59 +125,62 @@ function App() {
     };
   });
 
+  const handleErrorChar = useCallback(() => {
+    if (!isCorrectChar) return; // exit if last try was already incorrect
+
+    const newError = errorChars + 1;
+    const newAccuracy = calculateAccuracy(newError, quote);
+
+    setCorrectChar(false);
+    setAccuracy(newAccuracy);
+    setErrorChars(newError);
+  }, [calculateAccuracy, errorChars, isCorrectChar, quote]);
+
+  const handleNewChar = useCallback(
+    (durationInMinutes: number) => {
+      let updatedOutgoingChars = outgoingChars;
+      updatedOutgoingChars += currentChar;
+      setOutgoingChars(updatedOutgoingChars);
+      setCurrentChar(text.charAt(0));
+      setText(text.substring(1));
+      setCorrectChar(true);
+
+      const newCpm = calculateCpm(updatedOutgoingChars.length, durationInMinutes);
+      setCpm(newCpm);
+    },
+    [calculateCpm, currentChar, outgoingChars, text]
+  );
+
+  const handleNewWord = useCallback(
+    (durationInMinutes: number) => {
+      const newWordCount = wordCount + 1;
+      const newWpm = calculateWpm(newWordCount, durationInMinutes);
+      setWordCount(newWordCount);
+      setWpm(newWpm);
+    },
+    [calculateWpm, wordCount]
+  );
+
   const handleKeyDown = useCallback(
     ({ key }: React.KeyboardEvent<HTMLInputElement>) => {
-      let updatedOutgoingChars = outgoingChars;
-
       initStartTime();
 
+      // Check only real characters, don't check e.g. "Tab", "Shift", etc.
       if (key.length === 1) {
-        // Check only real characters, don't check e.g. "Tab", "Shift", etc.
         const durationInMinutes = getDurationInMinutes(startTime);
 
         if (key === currentChar) {
-          updatedOutgoingChars += currentChar;
-          setOutgoingChars(updatedOutgoingChars);
-          setCurrentChar(text.charAt(0));
-          setText(text.substring(1));
-          setCorrectChar(true);
-
-          const newCpm = calculateCpm(updatedOutgoingChars.length, durationInMinutes);
-          setCpm(newCpm);
+          handleNewChar(durationInMinutes);
 
           if (text.charAt(0) === " ") {
-            const newWordCount = wordCount + 1;
-            const newWpm = calculateWpm(newWordCount, durationInMinutes);
-
-            setWpm(newWpm);
-            setWordCount(newWordCount);
+            handleNewWord(durationInMinutes);
           }
         } else {
-          if (!isCorrectChar) return; // exit if last try was already incorrect
-
-          const newError = errorChars + 1;
-          const newAccuracy = calculateAccuracy(newError, quote);
-
-          setCorrectChar(false);
-          setAccuracy(newAccuracy);
-          setErrorChars(newError);
+          handleErrorChar();
         }
       }
     },
-    [
-      calculateAccuracy,
-      calculateCpm,
-      calculateWpm,
-      currentChar,
-      errorChars,
-      initStartTime,
-      isCorrectChar,
-      outgoingChars,
-      quote,
-      startTime,
-      text,
-      wordCount,
-    ]
+    [currentChar, handleErrorChar, handleNewChar, handleNewWord, initStartTime, startTime, text]
   );
 
   if (isLoading) {
