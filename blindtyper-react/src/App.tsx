@@ -45,35 +45,12 @@ function App() {
   }, [getQuoteData]);
 
   useEffect(() => {
-    intervalId.current = setInterval(() => {
-      if (startTime) {
-        const durationInMinutes = getDurationInMinutes(startTime);
-        const newCpm = calculateCpm(outgoingChars.length, durationInMinutes);
-        const newWpm = calculateWpm(wordCount, durationInMinutes);
-        setCpm(newCpm);
-        setWpm(newWpm);
-      }
-    }, 200);
+    intervalId.current = setInterval(updateCpmAndWpm, 200);
 
     return () => {
       clearInterval(intervalId.current);
     };
   });
-
-  const reset = useCallback(() => {
-    setLoading(true);
-    getQuoteData();
-    setWpm(0);
-    setCpm(0);
-    setAccuracy(DEFAULT_ACCURACY);
-    setText("");
-    setWordCount(0);
-    setCurrentChar("");
-    setStartTime(0);
-    setOutgoingChars("");
-    setCorrectChar(true);
-    setErrorChars(0);
-  }, [getQuoteData]);
 
   const calculateWpm = useCallback((wordCount: number, durationInMinutes: number) => {
     return Math.round(wordCount / durationInMinutes);
@@ -103,18 +80,53 @@ function App() {
     return finished;
   };
 
+  const updateCpmAndWpm = useCallback(() => {
+    if (startTime) {
+      const durationInMinutes = getDurationInMinutes(startTime);
+      const newCpm = calculateCpm(outgoingChars.length, durationInMinutes);
+      const newWpm = calculateWpm(wordCount, durationInMinutes);
+      setCpm(newCpm);
+      setWpm(newWpm);
+    }
+  }, [calculateCpm, calculateWpm, outgoingChars.length, startTime, wordCount]);
+
+  const reset = useCallback(() => {
+    setLoading(true);
+    getQuoteData();
+    setWpm(0);
+    setCpm(0);
+    setAccuracy(DEFAULT_ACCURACY);
+    setText("");
+    setWordCount(0);
+    setCurrentChar("");
+    setStartTime(0);
+    setOutgoingChars("");
+    setCorrectChar(true);
+    setErrorChars(0);
+  }, [getQuoteData]);
+
   const handleBlur = useCallback(({ target }: React.FocusEvent<HTMLInputElement, Element>) => {
     target.focus();
   }, []);
 
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLInputElement>) => {
+  // Hack for FireFox to disable Tab key
+  useEffect(() => {
+    function disableTabKey(this: Window, event: KeyboardEvent) {
       const { key } = event;
-
       if (key === "Tab") {
         event.preventDefault();
       }
+    }
 
+    window.addEventListener("keydown", disableTabKey);
+
+    return () => {
+      window.removeEventListener("keydown", disableTabKey);
+    };
+  });
+
+  const handleKeyDown = useCallback(
+    ({ key }: React.KeyboardEvent<HTMLInputElement>) => {
       let updatedOutgoingChars = outgoingChars;
 
       initStartTime();
@@ -164,37 +176,38 @@ function App() {
     ]
   );
 
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+
+  if (isFinished()) {
+    return (
+      <div>
+        <p>You nailed it! Literally :D</p>
+        <InfoHeader cpm={cpm} wpm={wpm} accuracy={accuracy} />
+        <button onClick={reset}>Reset</button>
+      </div>
+    );
+  }
   return (
-    <>
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : (
-        <div className="flex">
-          <input
-            type="text"
-            name="hiddenType"
-            id="hiddenType"
-            autoFocus
-            autoComplete="off"
-            onKeyDown={handleKeyDown}
-            onBlur={handleBlur}
-          />
-          {isFinished() ? (
-            <div>
-              <p>You nailed it! Literally :D</p>
-              <InfoHeader cpm={cpm} wpm={wpm} accuracy={accuracy} />
-              <button onClick={reset}>Reset</button>
-            </div>
-          ) : (
-            <>
-              <Quote text={text} char={currentChar} outgoingChars={outgoingChars} isCorrectChar={isCorrectChar}></Quote>
-              <InfoHeader cpm={cpm} wpm={wpm} accuracy={accuracy} />
-              <button onClick={reset}>Reset</button>
-            </>
-          )}
-        </div>
-      )}
-    </>
+    <div className="flex">
+      <input
+        type="text"
+        name="hiddenType"
+        id="hiddenType"
+        autoFocus
+        autoComplete="off"
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+      />
+      <div className="quote-block">
+        <Quote text={text} char={currentChar} outgoingChars={outgoingChars} isCorrectChar={isCorrectChar}></Quote>
+        <button className="quote-block_button" onClick={reset}>
+          Reset
+        </button>
+      </div>
+      <InfoHeader cpm={cpm} wpm={wpm} accuracy={accuracy} />
+    </div>
   );
 }
 
