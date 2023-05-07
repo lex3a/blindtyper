@@ -10,12 +10,18 @@ Or see Vue version live [here](https://blindtyper-vue.vercel.app/)
 
 ## How to build
 
-**git clone https://github.com/lex3a/blindtyper.git**
+1. Clone down project
 
-**cd blindtyper-react** for React app or **cd blindtyper-vue** for a Vue app
+   `git clone https://github.com/lex3a/blindtyper.git`
 
-Now either use:
+2. Choose whether you want to test a React app or a Vue app
 
-**npm run build** for production build
+   For React `cd blindtyper-react`
 
-Or **npm run dev** for development
+   For Vue `cd blindtyper-vue`
+
+3. Now choose your build type
+
+   Production `npm run build`
+
+   Development `npm run dev`
