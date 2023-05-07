@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watchEffect } from 'vue';
 import InfoHeader from './components/InfoHeader.vue'
 import Quote from './components/Quote.vue'
 import { currentTime, getDurationInMinutes } from './utils/time';
@@ -23,6 +23,7 @@ const isCorrectChar = ref(true);
 const errorChars = ref(0);
 const fetchError = ref('');
 const intervalId = ref<number>();
+const input = ref<HTMLInputElement | null>(null);
 
 const initQuoteStates = (quoteText: string) => {
   const newQuote = quoteText.replace(/\s{2}/g, ' ');
@@ -86,7 +87,6 @@ const reset = () => {
 }
 
 const handleBlur = (event: Event) => {
-  console.log("Return focus");
   (event.target as HTMLInputElement).focus();
 };
 
@@ -157,6 +157,13 @@ const handleKeyDown = (event: KeyboardEvent) => {
   }
 }
 
+// Return focus after lifecycle change too
+watchEffect(() => {
+  if (input.value) {
+    input.value.focus()
+  }
+})
+
 onMounted(() => {
   window.addEventListener("keydown", disableTabKey);
   getQuoteData();
@@ -180,7 +187,7 @@ onUnmounted(() => {
   </template>
   <template v-else>
     <div class="flex">
-      <input name="hiddenType" id="hiddenType" autoFocus="true" autoComplete="off" @keydown="handleKeyDown"
+      <input name="hiddenType" ref="input" id="hiddenType" autoFocus="true" autoComplete="off" @keydown="handleKeyDown"
         @blur="handleBlur" />
       <div class="quote-block">
         <Quote :text="text" :char="currentChar" :outgoingChars="outgoingChars" :isCorrectChar="isCorrectChar" />
