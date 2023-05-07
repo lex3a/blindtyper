@@ -1,8 +1,27 @@
 <script setup lang="ts">
-import ref from 'vue'
+interface IQuoteProps {
+  text: string;
+  char: string;
+  isCorrectChar: boolean;
+  outgoingChars: string;
+}
+
+defineProps<IQuoteProps>();
+
+
 </script>
 
-<template></template>
+<template>
+  <div class="quote">
+    <p>
+      <span class="green">{{ outgoingChars }}</span>
+      <span :class="isCorrectChar ? 'normal' : 'red'">
+        <span class="caret"></span>{{ char }}
+      </span>
+      <span>{{ text }}</span>
+    </p>
+  </div>
+</template>
 
 <style scoped>
 .quote {

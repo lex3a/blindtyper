@@ -1,8 +1,28 @@
 <script setup lang="ts">
-import ref from 'vue'
+interface IInfoHeaderProps {
+  cpm?: number;
+  wpm?: number;
+  accuracy?: number;
+}
+
+defineProps<IInfoHeaderProps>()
 </script>
 
-<template></template>
+<template>
+  <div class="infoHeader">
+    <div class="type-speed">
+      <p>Speed:</p>
+      <div>
+        <p>{{ cpm }} CPM</p>
+        <p>{{ wpm }} WPM</p>
+      </div>
+    </div>
+    <div class="type-accuracy">
+      <p>Accuracy:</p>
+      <p>{{ accuracy }}%</p>
+    </div>
+  </div>
+</template>
 
 
 <style scoped>
