@@ -4,6 +4,7 @@ import InfoHeader from './components/InfoHeader.vue'
 import Quote from './components/Quote.vue'
 import { currentTime, getDurationInMinutes } from './utils/time';
 import { checkWorldRecord } from './utils/record';
+import { calculateAccuracy, calculateCpm, calculateWpm } from './utils/stats';
 
 
 const DEFAULT_ACCURACY = 100;
@@ -41,18 +42,6 @@ const getQuoteData = async () => {
   } catch (error) {
     fetchError.value = `An error fetching quote. ${error}`;
   }
-};
-
-const calculateWpm = (wordCount: number, durationInMinutes: number) => {
-  return Math.round(wordCount / durationInMinutes);
-};
-
-const calculateCpm = (charCount: number, durationInMinutes: number) => {
-  return Math.round(charCount / durationInMinutes);
-};
-
-const calculateAccuracy = (errorChars: number, originalText: string) => {
-  return Math.max((1000 - Math.round((1000 * errorChars) / originalText.length)) / 10, 0);
 };
 
 const initStartTime = () => {
