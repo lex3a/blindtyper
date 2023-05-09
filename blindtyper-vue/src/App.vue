@@ -1,29 +1,11 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
-import InfoHeader from './components/InfoHeader.vue'
-import ResetButton from './components/ResetButton.vue'
-import Typer from './components/Typer.vue'
-import { checkWorldRecord } from './utils/record';
+import { onMounted, onUnmounted } from 'vue';
 import { useKeyboardTyperStore } from './stores/KeyboardTyperStore';
+import Typer from './components/Typer.vue'
+import Summary from './components/Summary.vue'
 
-const intervalId = ref<number>();
 
 const store = useKeyboardTyperStore();
-
-const isFinished = () => {
-  let finished = false;
-
-  // Compare only if we received a quote
-  if (store.quote.length > 0) {
-    finished = store.outgoingChars.length === store.quote.length;
-  }
-
-  if (finished) {
-    clearInterval(intervalId.value);
-  }
-
-  return finished;
-};
 
 function disableTabKey(this: Window, event: KeyboardEvent) {
   const { key } = event;
@@ -33,23 +15,23 @@ function disableTabKey(this: Window, event: KeyboardEvent) {
 }
 
 onMounted(() => {
+  /* 
+  Disable a Tab key for Firefox, Tab key will still work in Firefox
+  if we add an event listener to the another element.
+*/
   window.addEventListener("keydown", disableTabKey);
-  intervalId.value = setInterval(store.updateCpmAndWpm, 200);
+  store.intervalId = setInterval(store.updateCpmAndWpm, 200);
 });
 
 onUnmounted(() => {
   window.removeEventListener("keydown", disableTabKey);
-  clearInterval(intervalId.value);
+  clearInterval(store.intervalId);
 });
 
 </script>
 
 <template>
-  <template v-if="isFinished()">
-    <p>{{ checkWorldRecord(store.cpm) }}</p>
-    <InfoHeader />
-    <ResetButton />
-  </template>
+  <Summary v-if="store.isFinished" />
   <Typer v-else />
 </template>
 

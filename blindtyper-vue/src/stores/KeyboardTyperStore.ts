@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { currentTime, getDurationInMinutes } from "../utils/time";
 import { calculateAccuracy, calculateCpm, calculateWpm } from "../utils/stats";
 
@@ -22,6 +22,14 @@ export const useKeyboardTyperStore = defineStore("typer", () => {
   const errorChars = ref(0);
   const outgoingChars = ref("");
   const isCorrectChar = ref(true);
+
+  const intervalId = ref<number>();
+
+  const stopCpmAndWpmUpdates = () => {
+    if (isFinished) {
+      clearInterval(intervalId.value);
+    }
+  };
 
   const initQuoteStates = (quoteText: string) => {
     // Fix two spaces after the sentence which we got from API
@@ -103,6 +111,11 @@ export const useKeyboardTyperStore = defineStore("typer", () => {
     wpm.value = newWpm;
   };
 
+  const isFinished = computed(() => {
+    // Compare only if we received a quote
+    return quote.value.length > 0 ? outgoingChars.value.length === quote.value.length : false;
+  });
+
   return {
     getQuoteData,
     reset,
@@ -111,6 +124,8 @@ export const useKeyboardTyperStore = defineStore("typer", () => {
     handleErrorChar,
     handleNewWord,
     handleNewChar,
+    stopCpmAndWpmUpdates,
+    isFinished,
     wpm,
     cpm,
     accuracy,
@@ -122,5 +137,6 @@ export const useKeyboardTyperStore = defineStore("typer", () => {
     text,
     startTime,
     isCorrectChar,
+    intervalId,
   };
 });
