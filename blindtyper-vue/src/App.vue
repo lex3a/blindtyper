@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, ref, watchEffect } from 'vue';
 import InfoHeader from './components/InfoHeader.vue'
 import Quote from './components/Quote.vue'
+import ResetButton from './components/ResetButton.vue'
 import { getDurationInMinutes } from './utils/time';
 import { checkWorldRecord } from './utils/record';
 import { useKeyboardTyperStore } from './stores/KeyboardTyperStore';
@@ -78,7 +79,7 @@ onUnmounted(() => {
   <template v-else-if="isFinished()">
     <p>{{ checkWorldRecord(store.cpm) }}</p>
     <InfoHeader />
-    <button @click="store.reset">Reset</button>
+    <ResetButton />
   </template>
   <template v-else>
     <div class="flex">
@@ -87,7 +88,7 @@ onUnmounted(() => {
       <div class="quote-block">
         <Quote :text="store.text" :char="store.currentChar" :outgoingChars="store.outgoingChars"
           :isCorrectChar="store.isCorrectChar" />
-        <button class="quote-block_button" @click="store.reset">Reset</button>
+        <ResetButton />
       </div>
       <InfoHeader />
     </div>
@@ -108,12 +109,6 @@ onUnmounted(() => {
 .flex {
   display: flex;
   justify-content: space-between;
-}
-
-.quote-block_button {
-  display: inline-block;
-  margin: 0 auto;
-  margin-bottom: 2rem;
 }
 
 @media (max-width: 768px) {
