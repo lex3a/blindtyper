@@ -77,7 +77,7 @@ onUnmounted(() => {
   <template v-else-if="store.isLoading">Loading...</template>
   <template v-else-if="isFinished()">
     <p>{{ checkWorldRecord(store.cpm) }}</p>
-    <InfoHeader :cpm="store.cpm" :wpm="store.wpm" :accuracy="store.accuracy" />
+    <InfoHeader />
     <button @click="store.reset">Reset</button>
   </template>
   <template v-else>
@@ -89,7 +89,7 @@ onUnmounted(() => {
           :isCorrectChar="store.isCorrectChar" />
         <button class="quote-block_button" @click="store.reset">Reset</button>
       </div>
-      <InfoHeader :wpm="store.wpm" :cpm="store.cpm" :accuracy="store.accuracy" />
+      <InfoHeader />
     </div>
   </template>
 </template>

@@ -1,11 +1,8 @@
 <script setup lang="ts">
-interface IInfoHeaderProps {
-  cpm?: number;
-  wpm?: number;
-  accuracy?: number;
-}
+import { useKeyboardTyperStore } from '../stores/KeyboardTyperStore';
 
-defineProps<IInfoHeaderProps>()
+const store = useKeyboardTyperStore();
+
 </script>
 
 <template>
@@ -13,13 +10,13 @@ defineProps<IInfoHeaderProps>()
     <div class="type-speed">
       <p>Speed:</p>
       <div>
-        <p>{{ cpm }} CPM</p>
-        <p>{{ wpm }} WPM</p>
+        <p>{{ store.cpm }} CPM</p>
+        <p>{{ store.wpm }} WPM</p>
       </div>
     </div>
     <div class="type-accuracy">
       <p>Accuracy:</p>
-      <p>{{ accuracy }}%</p>
+      <p>{{ store.accuracy }}%</p>
     </div>
   </div>
 </template>
